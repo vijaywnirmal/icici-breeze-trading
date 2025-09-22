@@ -30,6 +30,8 @@
 	border-bottom: none;
 	min-height: 60px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	position: relative;
+	z-index: 10; /* Send header to back, below modals */
 }
 
 .header-left {
@@ -71,6 +73,8 @@
 	overflow: visible;
 	border-top: 1px solid rgba(255, 255, 255, 0.05);
 	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+	position: relative;
+	z-index: 10; /* Send ticker bar to back, below modals */
 }
 
 .ticker-controls-left {
@@ -212,7 +216,7 @@
 	display: flex;
 	align-items: center;
 	height: 100%;
-	z-index: 999;
+	z-index: 5;
 }
 
 .ticker-control-btn {
@@ -303,7 +307,7 @@
 	right: 0;
 	bottom: 0;
 	background: transparent;
-	z-index: 999;
+	z-index: 5;
 	pointer-events: auto;
 }
 
@@ -320,7 +324,7 @@
 	backdrop-filter: blur(10px);
 	animation: dropdownFadeIn 0.2s ease-out;
 	pointer-events: auto;
-	z-index: 1001;
+	z-index: 5;
 	overflow: hidden;
 }
 

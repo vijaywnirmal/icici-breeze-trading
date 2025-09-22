@@ -8,6 +8,10 @@ from sqlalchemy import text
 
 from ..utils.postgres import get_conn, ensure_tables
 from ..utils.response import log_exception
+from ..utils.redis_config import (
+    cache_live_price, get_cached_live_prices, 
+    is_redis_available, CacheKeys
+)
 
 
 TABLE = "ltp_cache"
@@ -17,16 +21,27 @@ _MEM_CACHE: Dict[str, Dict[str, Any]] = {}
 
 
 def upsert_quote(symbol: str, payload: Dict[str, Any]) -> None:
-	"""Upsert a cached quote for a symbol in PostgreSQL ltp_cache."""
+	"""Upsert a cached quote for a symbol in PostgreSQL ltp_cache and Redis."""
 	try:
+		# Add timestamp to payload
+		payload_with_timestamp = {
+			**payload,
+			"updated_at": datetime.utcnow().isoformat() + "Z",
+		}
+		
+		# Try Redis first for fast updates
+		if is_redis_available():
+			try:
+				cache_live_price(symbol.upper(), payload_with_timestamp, ttl=3600)  # 1 hour TTL
+			except Exception:
+				pass  # Continue to PostgreSQL
+		
+		# Also store in PostgreSQL for persistence
 		ensure_tables()
 		with get_conn() as conn:
 			if conn is None:
 				# Fallback to in-memory cache
-				_MEM_CACHE[symbol.upper()] = {
-					**payload,
-					"updated_at": datetime.utcnow().isoformat() + "Z",
-				}
+				_MEM_CACHE[symbol.upper()] = payload_with_timestamp
 				return
 			conn.execute(
 				text(
@@ -60,18 +75,25 @@ def upsert_quote(symbol: str, payload: Dict[str, Any]) -> None:
 	except Exception as exc:
 		# On any DB error, still keep an in-memory copy so UI can show last-known
 		try:
-			_MEM_CACHE[symbol.upper()] = {
-				**payload,
-				"updated_at": datetime.utcnow().isoformat() + "Z",
-			}
+			_MEM_CACHE[symbol.upper()] = payload_with_timestamp
 		except Exception:
 			pass
 		log_exception(exc, context="quotes_cache.upsert_quote", symbol=symbol)
 
 
 def get_cached_quote(symbol: str) -> Optional[Dict[str, Any]]:
-	"""Get cached quote from ltp_cache with structured columns."""
+	"""Get cached quote from Redis first, then PostgreSQL, then memory cache."""
 	try:
+		# Try Redis first for fastest access
+		if is_redis_available():
+			try:
+				cached_prices = get_cached_live_prices([symbol.upper()])
+				if cached_prices and symbol.upper() in cached_prices:
+					return cached_prices[symbol.upper()]
+			except Exception:
+				pass  # Continue to PostgreSQL
+		
+		# Fallback to PostgreSQL
 		with get_conn() as conn:
 			if conn is None:
 				# Fallback to in-memory cache

@@ -8,6 +8,10 @@ from sqlalchemy import text
 from ..utils.postgres import get_conn
 from ..utils.response import error_response, success_response, log_exception
 from ..utils.session import get_breeze
+from ..utils.redis_config import (
+    cache_market_status, get_cached_market_status, 
+    cache_set, cache_get, make_key, CacheKeys
+)
 from .quotes import _is_market_open_ist
 
 
@@ -18,8 +22,22 @@ router = APIRouter(prefix="/api", tags=["instruments"])
 def market_status() -> Dict[str, Any]:
     """Check if the market is currently open."""
     try:
+        # Try to get cached market status first
+        cached_status = get_cached_market_status()
+        if cached_status:
+            return success_response("Market status", **cached_status)
+        
+        # Calculate market status
         is_open = _is_market_open_ist()
-        return success_response("Market status", is_open=is_open, status="open" if is_open else "closed")
+        status_data = {
+            "is_open": is_open, 
+            "status": "open" if is_open else "closed"
+        }
+        
+        # Cache the result for 1 minute
+        cache_market_status(status_data, ttl=60)
+        
+        return success_response("Market status", **status_data)
     except Exception as exc:
         log_exception(exc, context="market.status")
         return error_response("Failed to check market status", error=str(exc))
@@ -39,6 +57,14 @@ def instruments_search(
     try:
         if not q or len(q.strip()) < 2:
             return error_response("Search query must be at least 2 characters")
+
+        # Create cache key based on search parameters
+        cache_key = make_key(CacheKeys.INSTRUMENTS_SEARCH, f"{q}_{exchange}_{websocket_only}_{limit}")
+        
+        # Try to get cached results first
+        cached_results = cache_get(cache_key)
+        if cached_results:
+            return success_response("Instruments search", **cached_results)
 
         search_term = f"%{q.strip().upper()}%"
         
@@ -95,7 +121,13 @@ def instruments_search(
                 }
                 for r in rows
             ]
-            return success_response("Instruments search", items=items, total=len(items))
+            
+            result_data = {"items": items, "total": len(items)}
+            
+            # Cache the results for 5 minutes
+            cache_set(cache_key, result_data, ttl=300)
+            
+            return success_response("Instruments search", **result_data)
     except Exception as exc:
         log_exception(exc, context="instruments.search")
         return error_response("Failed to search instruments", error=str(exc))

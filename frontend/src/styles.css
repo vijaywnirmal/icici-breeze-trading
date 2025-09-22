@@ -127,71 +127,18 @@
 	font-size: 13px;
   }
   
-  /* Overlay behind dropdown/modal */
-  .profile-modal-overlay {
-	position: fixed;
-	inset: 0;
-	background: transparent;
-	z-index: 1100; /* below the modal */
-	pointer-events: auto;
-  }
-  
-  /* Dropdown container anchored to viewport (avoid clipping) */
-  .profile-modal,
-  .profile-dropdown {
-	position: fixed; /* pin to viewport */
-	top: 80px; /* adjust to match header height */
-	right: 20px;
-	background: rgba(20,20,25,0.98);
-	border: 1px solid rgba(255,255,255,0.12);
-	border-radius: 8px;
-	box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-	z-index: 1200; /* above overlay and ticker */
-	animation: dropdownFadeIn 0.2s ease;
-	min-width: 220px;
-	padding: 12px 0;
-	overflow: hidden;
-  }
-
-  /* Ensure profile button is above ticker and can be clickable */
+  /* Profile dropdown now uses inline styles to match Edit Columns modal */
+  /* Keep only the profile button styling */
   .profile-button-minimal,
   .profile-button {
 	position: relative;
 	z-index: 1210;
   }
+
+  /* Profile dropdown now uses inline styles to match Edit Columns modal */
+  /* CSS class removed to avoid conflicts with inline styles */
   
-  /* Dropdown items */
-  .profile-modal-item,
-  .profile-dropdown .info-item,
-  .profile-dropdown a {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 10px 14px;
-	color: var(--text-color);
-	cursor: pointer;
-	transition: background 0.2s ease;
-  }
-  
-  .profile-modal-item:hover,
-  .profile-dropdown a:hover {
-	background: var(--bg-tertiary);
-  }
-  
-  .profile-modal-item.logout {
-	color: #f87171;
-  }
-  
-  @keyframes dropdownFadeIn {
-	from {
-	  opacity: 0;
-	  transform: translateY(-10px);
-	}
-	to {
-	  opacity: 1;
-	  transform: translateY(0);
-	}
-  }
+  /* Animation keyframes removed - using inline styles now */
   
   /* ===============================
 	 MODALS

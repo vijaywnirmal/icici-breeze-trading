@@ -3,26 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { Dropdown, DropdownItem } from './ui/Dropdown.jsx'
 import Button from './ui/Button.jsx'
 
-// Add CSS keyframes for dropdown animation
-const dropdownStyles = `
-@keyframes dropdownFadeIn {
-	from {
-		opacity: 0;
-		transform: translateY(-10px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-`
-
-// Inject styles
-if (typeof document !== 'undefined') {
-	const styleElement = document.createElement('style')
-	styleElement.textContent = dropdownStyles
-	document.head.appendChild(styleElement)
-}
+// No longer needed - using inline styles to match Edit Columns modal
 
 export default function CustomerProfile({ layout = 'sidebar' }) {
 	const [customerData, setCustomerData] = useState(null)
@@ -163,12 +144,36 @@ export default function CustomerProfile({ layout = 'sidebar' }) {
 
 	// Top-right profile button for main layout
 	return (
-		<div className="customer-profile" ref={dropdownRef} style={{ position: 'relative' }}>
+		<div style={{ position: 'relative', display: 'inline-block', zIndex: 10000 }}>
 			<button 
-				className="profile-button-minimal"
+				style={{
+					width: '40px',
+					height: '40px',
+					padding: '0',
+					background: 'rgba(255, 255, 255, 0.05)',
+					border: '1px solid rgba(255, 255, 255, 0.1)',
+					borderRadius: '50%',
+					color: '#ffffff',
+					cursor: 'pointer',
+					transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center'
+				}}
 				onClick={() => {
 					console.log('Profile button clicked, current dropdown state:', showDropdown);
+					console.log('Customer data:', customerData);
 					setShowDropdown(!showDropdown);
+				}}
+				onMouseEnter={(e) => {
+					e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+					e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+					e.target.style.transform = 'translateY(-2px)';
+				}}
+				onMouseLeave={(e) => {
+					e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+					e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+					e.target.style.transform = 'translateY(0)';
 				}}
 			>
 				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -178,54 +183,111 @@ export default function CustomerProfile({ layout = 'sidebar' }) {
 			</button>
 			
 			{showDropdown && (
-				<>
-					{/* Overlay */}
-					<div 
-						className="profile-modal-overlay"
-						onClick={() => setShowDropdown(false)}
-					/>
-
-					{/* Modal */}
-					<div 
-						className="profile-modal"
-						ref={dropdownRef}
-						onClick={(e) => e.stopPropagation()}
-					>
-						{customerData && (
-							<div style={{ padding: '8px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-								<div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
-									<span style={{ color: 'rgba(255,255,255,0.6)' }}>User ID:</span>
-									<span>{customerData.idirect_userid || customerData.user_id || 'N/A'}</span>
-								</div>
-								<div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
-									<span style={{ color: 'rgba(255,255,255,0.6)' }}>Name:</span>
-									<span>{getDisplayName()}</span>
-								</div>
+				<div
+					ref={dropdownRef}
+					style={{
+						position: 'absolute',
+						top: '100%',
+						right: '0',
+						marginTop: '8px',
+						background: '#1a1a1a',
+						border: '1px solid #333',
+						borderRadius: '8px',
+						padding: '16px',
+						minWidth: '280px',
+						width: '280px',
+						zIndex: 99999,
+						boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+						color: '#fff',
+						fontFamily: 'inherit'
+					}}
+					onClick={(e) => e.stopPropagation()}
+				>
+					{/* Header */}
+					<div style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '600', color: '#fff' }}>
+						Profile
+					</div>
+					
+					{/* User Info Section */}
+					{customerData && (
+						<div style={{ marginBottom: '16px', padding: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+							<div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '8px' }}>
+								<span style={{ color: 'rgba(255,255,255,0.6)' }}>User ID:</span>
+								<span style={{ color: '#fff', fontWeight: '500' }}>{customerData.idirect_userid || customerData.user_id || 'N/A'}</span>
 							</div>
-						)}
-
-						<div 
-							className="profile-modal-item"
-							onClick={() => navigate('/holidays')}
-						>
-							<svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-								<path d="M3 5h18M8 5v14m8-14v14M3 19h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-							</svg>
-							Holidays
+							<div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+								<span style={{ color: 'rgba(255,255,255,0.6)' }}>Name:</span>
+								<span style={{ color: '#fff', fontWeight: '500' }}>{getDisplayName()}</span>
+							</div>
 						</div>
+					)}
 
+					{/* Menu Items */}
+					<div style={{ marginBottom: '16px' }}>
 						<div 
-							className="profile-modal-item logout"
-							onClick={handleLogout}
+							style={{
+								display: 'flex',
+								alignItems: 'center',
+								gap: '8px',
+								padding: '10px 12px',
+								cursor: 'pointer',
+								borderRadius: '6px',
+								transition: 'background 0.2s ease',
+								color: '#fff'
+							}}
+							onClick={() => {
+								navigate('/holidays');
+								setShowDropdown(false);
+							}}
+							onMouseEnter={(e) => {
+								e.target.style.background = 'rgba(255,255,255,0.1)';
+							}}
+							onMouseLeave={(e) => {
+								e.target.style.background = 'transparent';
+							}}
 						>
-							<svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-								<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" 
-									stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+								<path d="M3 5h18M8 5v14m8-14v14M3 19h18" strokeLinecap="round"/>
 							</svg>
-							Logout
+							<span style={{ fontSize: '13px', fontWeight: '500' }}>Holidays</span>
 						</div>
 					</div>
-				</>
+
+					{/* Logout Button */}
+					<button
+						onClick={handleLogout}
+						style={{
+							width: '100%',
+							display: 'flex',
+							alignItems: 'center',
+							justifyContent: 'center',
+							gap: '8px',
+							background: 'rgba(248, 113, 113, 0.1)',
+							border: '1px solid rgba(248, 113, 113, 0.3)',
+							borderRadius: '6px',
+							padding: '10px 12px',
+							cursor: 'pointer',
+							fontSize: '13px',
+							fontWeight: '500',
+							color: '#f87171',
+							transition: 'all 0.2s ease'
+						}}
+						onMouseEnter={(e) => {
+							e.target.style.background = 'rgba(248, 113, 113, 0.2)';
+							e.target.style.borderColor = 'rgba(248, 113, 113, 0.5)';
+						}}
+						onMouseLeave={(e) => {
+							e.target.style.background = 'rgba(248, 113, 113, 0.1)';
+							e.target.style.borderColor = 'rgba(248, 113, 113, 0.3)';
+						}}
+					>
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+							<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" 
+								strokeLinecap="round" strokeLinejoin="round"/>
+						</svg>
+						Logout
+					</button>
+				</div>
 			)}
 		</div>
 	)

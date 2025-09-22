@@ -24,6 +24,9 @@ BREEZE_SESSION_TOKEN=your_session_token_here
 # Database (optional - leave empty if not using PostgreSQL)
 POSTGRES_DSN=
 
+# Redis Configuration
+REDIS_URL=redis://localhost:6379/0
+
 # Market holidays
 HOLIDAYS_CSV_PATH=src/HolidaycalenderData.csv
 MARKET_HOLIDAYS=2024-01-26,2024-03-25,2024-08-15

@@ -7,6 +7,7 @@ from typing import Optional
 
 from .utils.config import settings
 from .utils.ssl_config import configure_ssl_context
+from .middleware.rate_limit import RateLimitMiddleware
 from .routes.login import router as login_router
 from .routes.home import router as home_router
 from .routes.stream import router as stream_router
@@ -41,6 +42,13 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+# Add rate limiting middleware
+app.add_middleware(
+    RateLimitMiddleware,
+    calls_per_hour=1000,  # 1000 requests per hour
+    calls_per_minute=100  # 100 requests per minute
 )
 
 

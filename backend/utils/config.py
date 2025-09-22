@@ -27,6 +27,9 @@ class Settings:
     # PostgreSQL DSN (e.g., postgresql+psycopg://user:pass@localhost:5432/dbname)
     postgres_dsn: str | None = os.getenv("POSTGRES_DSN")
 
+    # Redis URL (e.g., redis://localhost:6379/0)
+    redis_url: str | None = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+
     # Control whether to run instruments first-load automatically on login
     instruments_first_run_on_login: bool = os.getenv("INSTRUMENTS_FIRST_RUN_ON_LOGIN", "true").lower() in ("1", "true", "yes")
 
