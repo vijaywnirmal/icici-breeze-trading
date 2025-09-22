@@ -279,4 +279,124 @@
   .text-muted {
 	color: var(--text-muted) !important;
   }
+
+  /* ===============================
+	 HOME LAYOUT & WATCHLIST PANEL
+  =================================*/
+  .home-layout {
+	display: flex;
+	gap: 24px;
+	width: 100%;
+	max-width: 1400px;
+	margin: 0 auto;
+	padding: 24px;
+	min-height: calc(100vh - 80px); /* Adjust based on header height */
+  }
+
+  .home-main {
+	flex: 1;
+	min-width: 0; /* Prevents flex item from overflowing */
+  }
+
+  .home-sidebar {
+	width: 350px;
+	flex-shrink: 0;
+  }
+
+  .features-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 24px;
+	width: 100%;
+  }
+
+  .feature-card {
+	transition: all 0.3s ease;
+  }
+
+  .feature-card:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
+
+  .watchlist-panel {
+	position: relative;
+	height: 100%;
+  }
+
+  .watchlist-panel input:focus {
+	border-color: var(--accent-color);
+	box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2);
+  }
+
+  .watchlist-panel .search-results {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	z-index: 1000;
+	max-height: 200px;
+	overflow-y: auto;
+	margin-top: 4px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .watchlist-panel .search-results::-webkit-scrollbar {
+	width: 6px;
+  }
+
+  .watchlist-panel .search-results::-webkit-scrollbar-track {
+	background: var(--bg-tertiary);
+  }
+
+  .watchlist-panel .search-results::-webkit-scrollbar-thumb {
+	background: var(--border-light);
+	border-radius: 3px;
+  }
+
+  .watchlist-panel .search-results::-webkit-scrollbar-thumb:hover {
+	background: var(--accent-color);
+  }
+
+  @keyframes spin {
+	0% { transform: translateY(-50%) rotate(0deg); }
+	100% { transform: translateY(-50%) rotate(360deg); }
+  }
+
+  /* Responsive Design */
+  @media (max-width: 1200px) {
+	.home-layout {
+		flex-direction: column;
+		gap: 16px;
+	}
+
+	.home-sidebar {
+		width: 100%;
+		max-width: 500px;
+		margin: 0 auto;
+	}
+
+	.features-grid {
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: 16px;
+	}
+  }
+
+  @media (max-width: 768px) {
+	.home-layout {
+		padding: 16px;
+	}
+
+	.features-grid {
+		grid-template-columns: 1fr;
+		gap: 12px;
+	}
+
+	.home-sidebar {
+		max-width: 100%;
+	}
+  }
   

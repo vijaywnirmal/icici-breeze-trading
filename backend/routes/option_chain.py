@@ -392,7 +392,7 @@ def get_banknifty_strikes(
             if breeze:
                 try:
                     banknifty_quote = breeze.client.get_quotes(
-                        stock_code="BANKNIFTY",
+                        stock_code="CNXBAN",
                         exchange_code="NSE",
                         product_type="cash"
                     )
@@ -450,7 +450,7 @@ def get_finnifty_strikes(
             if breeze:
                 try:
                     finnifty_quote = breeze.client.get_quotes(
-                        stock_code="FINNIFTY",
+                        stock_code="NIFFIN",
                         exchange_code="NSE",
                         product_type="cash"
                     )

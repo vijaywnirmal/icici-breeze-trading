@@ -144,6 +144,15 @@ async def ws_options(websocket: WebSocket) -> None:
 
             if action == "subscribe_options":
                 underlying = (msg.get("underlying") or "NIFTY").upper()
+                
+                # Map frontend symbols to Breeze API stock codes for options
+                breeze_stock_code = underlying
+                if underlying == "BANKNIFTY":
+                    breeze_stock_code = "CNXBAN"
+                elif underlying == "FINNIFTY":
+                    breeze_stock_code = "NIFFIN"
+                # NIFTY remains "NIFTY"
+                
                 expiry_date = msg.get("expiry_date")
                 strikes = msg.get("strikes", [])
                 right_req = (msg.get("right") or "both").lower()
@@ -228,7 +237,7 @@ async def ws_options(websocket: WebSocket) -> None:
                         # Subscribe only to requested side(s)
                         if right_req in ("call", "both"):
                             STREAM_MANAGER.subscribe_option(
-                                stock_code=underlying,
+                                stock_code=breeze_stock_code,
                                 exchange_code="NFO",
                                 expiry_date=breeze_expiry,
                                 strike_price=str(strike),
@@ -237,7 +246,7 @@ async def ws_options(websocket: WebSocket) -> None:
                             )
                         if right_req in ("put", "both"):
                             STREAM_MANAGER.subscribe_option(
-                                stock_code=underlying,
+                                stock_code=breeze_stock_code,
                                 exchange_code="NFO",
                                 expiry_date=breeze_expiry,
                                 strike_price=str(strike),
@@ -251,7 +260,7 @@ async def ws_options(websocket: WebSocket) -> None:
                         for strike in strikes:
                             if right_req in ("call", "both"):
                                 STREAM_MANAGER.subscribe_option(
-                                    stock_code=underlying,
+                                    stock_code=breeze_stock_code,
                                     exchange_code="BSE",
                                     expiry_date=breeze_expiry,
                                     strike_price=str(strike),
@@ -260,7 +269,7 @@ async def ws_options(websocket: WebSocket) -> None:
                                 )
                             if right_req in ("put", "both"):
                                 STREAM_MANAGER.subscribe_option(
-                                    stock_code=underlying,
+                                    stock_code=breeze_stock_code,
                                     exchange_code="BSE",
                                     expiry_date=breeze_expiry,
                                     strike_price=str(strike),
@@ -306,6 +315,15 @@ async def ws_options(websocket: WebSocket) -> None:
 
             elif action == "subscribe_market_depth":
                 underlying = (msg.get("underlying") or "NIFTY").upper()
+                
+                # Map frontend symbols to Breeze API stock codes for options
+                breeze_stock_code = underlying
+                if underlying == "BANKNIFTY":
+                    breeze_stock_code = "CNXBAN"
+                elif underlying == "FINNIFTY":
+                    breeze_stock_code = "NIFFIN"
+                # NIFTY remains "NIFTY"
+                
                 expiry_date = msg.get("expiry_date")
                 strikes = msg.get("strikes", [])
                 right_req = (msg.get("right") or "both").lower()
@@ -351,7 +369,7 @@ async def ws_options(websocket: WebSocket) -> None:
                         # Subscribe only to requested side(s)
                         if right_req in ("call", "both"):
                             STREAM_MANAGER.subscribe_option_market_depth(
-                                stock_code=underlying,
+                                stock_code=breeze_stock_code,
                                 exchange_code="NFO",
                                 expiry_date=breeze_expiry,
                                 strike_price=str(strike),
@@ -360,7 +378,7 @@ async def ws_options(websocket: WebSocket) -> None:
                             )
                         if right_req in ("put", "both"):
                             STREAM_MANAGER.subscribe_option_market_depth(
-                                stock_code=underlying,
+                                stock_code=breeze_stock_code,
                                 exchange_code="NFO",
                                 expiry_date=breeze_expiry,
                                 strike_price=str(strike),

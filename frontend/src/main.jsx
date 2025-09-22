@@ -10,7 +10,6 @@ import HolidaysPage from './pages/Holidays.jsx'
 import BacktestPage from './pages/Backtest.jsx'
 import StrategyBuilder from './pages/StrategyBuilder.tsx'
 import BacktestResults from './pages/BacktestResults.tsx'
-import LiveTrading from './pages/LiveTrading.jsx'
 import './styles.css'
 
 // Silence all console output in production and development per request
@@ -55,11 +54,6 @@ createRoot(document.getElementById('root')).render(
 			<Route path="/results" element={
 				<AppLayout>
 					<BacktestResults />
-				</AppLayout>
-			} />
-			<Route path="/live-trading" element={
-				<AppLayout>
-					<LiveTrading />
 				</AppLayout>
 			} />
 			<Route path="/option-chain" element={

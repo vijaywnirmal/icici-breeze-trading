@@ -9,7 +9,6 @@ export default function Navigation() {
 	const getPageName = (pathname) => {
 		switch (pathname) {
 			case '/home': return 'Home'
-			case '/live-trading': return 'Live Trading'
 			case '/backtest': return 'Backtest'
 			case '/builder': return 'Strategy Builder'
 			case '/results': return 'Results'

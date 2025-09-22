@@ -3,6 +3,7 @@ import { Card, CardHeader, CardContent } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Typography from '../components/ui/Typography'
 import { useNavigate } from 'react-router-dom'
+import WatchlistPanel from '../components/WatchlistPanel'
 
 export default function HomePage() {
 	const [firstName, setFirstName] = useState('')
@@ -45,10 +46,6 @@ export default function HomePage() {
 
 	const mainFeatures = [
 		{
-			title: 'Live Trading',
-			action: () => navigate('/live-trading')
-		},
-		{
 			title: 'Backtest Strategy',
 			action: () => navigate('/backtest')
 		},
@@ -84,49 +81,56 @@ export default function HomePage() {
 	}
 
 	return (
-		<div className="features-grid">
-			{mainFeatures.map((feature, index) => (
-				<Card
-					key={index}
-					variant="elevated"
-					className="feature-card"
-					style={{
-						cursor: 'pointer',
-						// Keep consistent minimum height; avoids overly tall cards
-						minHeight: '50px',
-						border: '1px solid rgba(255, 255, 255, 0.1)',
-						background: 'rgba(255, 255, 255, 0.02)',
-						transition: 'all 0.3s ease',
-						backdropFilter: 'blur(10px)'
-					}}
-					onClick={feature.action}
-				>
-					<CardContent>
-						<div style={{
-							display: 'flex',
-							flexDirection: 'column',
-							// Remove forced stretch inside cards
-							// height: '100%',
-							gap: 'var(--space-3)',
-							alignItems: 'center',
-							textAlign: 'center'
-						}}>
-							<div style={{
-								fontSize: '32px',
-								lineHeight: 1
-							}}>
-								{feature.icon}
-							</div>
-							<Typography variant="h3" style={{ margin: 0, fontSize: '16px', color: '#ffffff' }}>
-								{feature.title}
-							</Typography>
-							<Typography variant="caption" color="secondary" style={{ margin: 0, fontSize: '12px', color: 'rgba(255, 255, 255, 0.7)' }}>
-								{feature.description}
-							</Typography>
-						</div>
-					</CardContent>
-				</Card>
-			))}
+		<div className="home-layout">
+			<div className="home-main">
+				<div className="features-grid">
+					{mainFeatures.map((feature, index) => (
+						<Card
+							key={index}
+							variant="elevated"
+							className="feature-card"
+							style={{
+								cursor: 'pointer',
+								// Keep consistent minimum height; avoids overly tall cards
+								minHeight: '50px',
+								border: '1px solid rgba(255, 255, 255, 0.1)',
+								background: 'rgba(255, 255, 255, 0.02)',
+								transition: 'all 0.3s ease',
+								backdropFilter: 'blur(10px)'
+							}}
+							onClick={feature.action}
+						>
+							<CardContent>
+								<div style={{
+									display: 'flex',
+									flexDirection: 'column',
+									// Remove forced stretch inside cards
+									// height: '100%',
+									gap: 'var(--space-3)',
+									alignItems: 'center',
+									textAlign: 'center'
+								}}>
+									<div style={{
+										fontSize: '32px',
+										lineHeight: 1
+									}}>
+										{feature.icon}
+									</div>
+									<Typography variant="h3" style={{ margin: 0, fontSize: '16px', color: '#ffffff' }}>
+										{feature.title}
+									</Typography>
+									<Typography variant="caption" color="secondary" style={{ margin: 0, fontSize: '12px', color: 'rgba(255, 255, 255, 0.7)' }}>
+										{feature.description}
+									</Typography>
+								</div>
+							</CardContent>
+						</Card>
+					))}
+				</div>
+			</div>
+			<div className="home-sidebar">
+				<WatchlistPanel />
+			</div>
 		</div>
 	)
 }
