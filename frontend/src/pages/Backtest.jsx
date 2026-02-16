@@ -6,8 +6,12 @@ export default function BacktestPage() {
 	const [symbol, setSymbol] = useState('NIFTY')
 	const [start, setStart] = useState('2024-01-01')
 	const [end, setEnd] = useState('2024-08-31')
+	const [strategy, setStrategy] = useState('ma_crossover')
 	const [fast, setFast] = useState(20)
 	const [slow, setSlow] = useState(50)
+	const [emaPeriod, setEmaPeriod] = useState(5)
+	const [bbPeriod, setBbPeriod] = useState(20)
+	const [bbDev, setBbDev] = useState(1.5)
 	const [capital, setCapital] = useState(100000)
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState('')
@@ -26,12 +30,17 @@ export default function BacktestPage() {
 		setTrades([])
 		setBacktestId('')
 		try {
+			const selectedStrategy = strategy.trim().toLowerCase()
+			const params = selectedStrategy === 'ema_boll'
+				? { ema_period: emaPeriod, bb_period: bbPeriod, bb_dev: bbDev, capital }
+				: { fast, slow, capital }
 			const payload = {
+				user_id: '00000000-0000-0000-0000-000000000000',
 				symbol: symbol.trim().toUpperCase(),
 				start_date: start,
 				end_date: end,
-				strategy: 'ma_crossover',
-				params: { fast, slow, capital }
+				strategy: selectedStrategy,
+				params
 			}
 			const res = await fetch(`${api}/api/backtests/run`, {
 				method: 'POST',
@@ -44,6 +53,11 @@ export default function BacktestPage() {
 			}
 			setSummary(json?.summary || null)
 			setBacktestId(json?.backtest_id || '')
+			const inlineTrades = Array.isArray(json?.trades) ? json.trades : []
+			if (inlineTrades.length > 0) {
+				setTrades(inlineTrades)
+				return
+			}
 
 			if (json?.backtest_id) {
 				const res2 = await fetch(`${api}/api/backtests/${json.backtest_id}`)
@@ -87,6 +101,17 @@ export default function BacktestPage() {
 							/>
 						</div>
 						<div>
+							<label htmlFor="strategy">Strategy</label>
+							<select
+								id="strategy"
+								value={strategy}
+								onChange={(e) => setStrategy(e.target.value)}
+							>
+								<option value="ma_crossover">MA Crossover</option>
+								<option value="ema_boll">EMA + Bollinger Breakout</option>
+							</select>
+						</div>
+						<div>
 							<label htmlFor="start">Start Date</label>
 							<input 
 								id="start"
@@ -104,26 +129,64 @@ export default function BacktestPage() {
 								onChange={(e) => setEnd(e.target.value)} 
 							/>
 						</div>
-						<div>
-							<label htmlFor="fast">Fast MA Period</label>
-							<input 
-								id="fast"
-								type="number" 
-								min={2} 
-								value={fast} 
-								onChange={(e) => setFast(Number(e.target.value))} 
-							/>
-						</div>
-						<div>
-							<label htmlFor="slow">Slow MA Period</label>
-							<input 
-								id="slow"
-								type="number" 
-								min={3} 
-								value={slow} 
-								onChange={(e) => setSlow(Number(e.target.value))} 
-							/>
-						</div>
+						{strategy === 'ma_crossover' ? (
+							<>
+								<div>
+									<label htmlFor="fast">Fast MA Period</label>
+									<input 
+										id="fast"
+										type="number" 
+										min={2} 
+										value={fast} 
+										onChange={(e) => setFast(Number(e.target.value))} 
+									/>
+								</div>
+								<div>
+									<label htmlFor="slow">Slow MA Period</label>
+									<input 
+										id="slow"
+										type="number" 
+										min={3} 
+										value={slow} 
+										onChange={(e) => setSlow(Number(e.target.value))} 
+									/>
+								</div>
+							</>
+						) : (
+							<>
+								<div>
+									<label htmlFor="emaPeriod">EMA Period</label>
+									<input 
+										id="emaPeriod"
+										type="number" 
+										min={2} 
+										value={emaPeriod} 
+										onChange={(e) => setEmaPeriod(Number(e.target.value))} 
+									/>
+								</div>
+								<div>
+									<label htmlFor="bbPeriod">Bollinger Period</label>
+									<input 
+										id="bbPeriod"
+										type="number" 
+										min={5} 
+										value={bbPeriod} 
+										onChange={(e) => setBbPeriod(Number(e.target.value))} 
+									/>
+								</div>
+								<div>
+									<label htmlFor="bbDev">Bollinger Dev</label>
+									<input 
+										id="bbDev"
+										type="number" 
+										min={0.1}
+										step={0.1}
+										value={bbDev} 
+										onChange={(e) => setBbDev(Number(e.target.value))} 
+									/>
+								</div>
+							</>
+						)}
 						<div>
 							<label htmlFor="capital">Initial Capital (₹)</label>
 							<input 
