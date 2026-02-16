@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import pandas as pd
 
-from .historical_service import OHLCBar
+if TYPE_CHECKING:
+    from .historical_service import OHLCBar
 
 
 @dataclass
