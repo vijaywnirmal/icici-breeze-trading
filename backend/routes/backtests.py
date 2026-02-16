@@ -10,19 +10,33 @@ from sqlalchemy import text
 from ..utils.postgres import get_conn, ensure_tables
 from ..utils.response import error_response, success_response, log_exception
 from ..services.historical_service import get_ohlc_daily
-from ..services.backtest_service import run_ma_crossover
+from ..services.backtest_service import run_ma_crossover, run_ema_boll_breakout
 
 
 router = APIRouter(prefix="/api", tags=["backtests"])
 
 
 class RunBacktestPayload(BaseModel):
-    user_id: str = Field(..., description="UUID of user")
+    user_id: Optional[str] = Field(None, description="UUID of user")
     symbol: str = Field(..., description="Symbol, e.g. NIFTY")
     start_date: date
     end_date: date
     strategy: str = Field("ma_crossover")
     params: Dict[str, Any] = Field(default_factory=dict)
+
+
+DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000"
+
+
+def _serialize_signals(signals: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    serialized: List[Dict[str, Any]] = []
+    for sig in signals:
+        row = dict(sig)
+        ts = row.get("datetime")
+        if isinstance(ts, datetime):
+            row["datetime"] = ts.isoformat()
+        serialized.append(row)
+    return serialized
 
 
 @router.post("/backtests/run")
@@ -33,18 +47,40 @@ def run_backtest(payload: RunBacktestPayload) -> Dict[str, Any]:
         if not bars:
             return error_response("No OHLC data available for given range")
 
-        if (payload.strategy or "").lower() == "ma_crossover":
+        strategy_name = (payload.strategy or "").strip().lower()
+        if strategy_name == "ma_crossover":
             fast = int(payload.params.get("fast", 20))
             slow = int(payload.params.get("slow", 50))
             capital = float(payload.params.get("capital", 100000))
             result = run_ma_crossover(bars, fast=fast, slow=slow, capital=capital)
+        elif strategy_name in {"ema_boll", "ema_boll_breakout", "5ema_boll"}:
+            ema_period = int(payload.params.get("ema_period", 5))
+            bb_period = int(payload.params.get("bb_period", 20))
+            bb_dev = float(payload.params.get("bb_dev", 1.5))
+            capital = float(payload.params.get("capital", 100000))
+            result = run_ema_boll_breakout(
+                bars,
+                ema_period=ema_period,
+                bb_period=bb_period,
+                bb_dev=bb_dev,
+                capital=capital,
+            )
         else:
             return error_response("Unsupported strategy", error=payload.strategy)
+
+        serialized_signals = _serialize_signals(result.signals)
 
         # Persist summary and trades
         with get_conn() as conn:
             if conn is None:
-                return success_response("Backtest computed", backtest_id=None, summary=result.summary, trades=[t.__dict__ for t in result.trades])
+                return success_response(
+                    "Backtest computed",
+                    backtest_id=None,
+                    summary=result.summary,
+                    trades=[t.__dict__ for t in result.trades],
+                    signals=serialized_signals,
+                )
+            user_id = payload.user_id or DEFAULT_USER_ID
             row = conn.execute(
                 text(
                     """
@@ -54,7 +90,7 @@ def run_backtest(payload: RunBacktestPayload) -> Dict[str, Any]:
                     """
                 ),
                 {
-                    "user_id": payload.user_id,
+                    "user_id": user_id,
                     "symbol": payload.symbol.upper(),
                     "strategy": payload.strategy,
                     "params": __import__("json").dumps(payload.params),
@@ -86,7 +122,12 @@ def run_backtest(payload: RunBacktestPayload) -> Dict[str, Any]:
                     },
                 )
 
-        return success_response("Backtest saved", backtest_id=str(bt_id), summary=result.summary)
+        return success_response(
+            "Backtest saved",
+            backtest_id=str(bt_id),
+            summary=result.summary,
+            signals=serialized_signals,
+        )
     except Exception as exc:
         log_exception(exc, context="backtests.run")
         return error_response("Exception while running backtest", error=str(exc))
